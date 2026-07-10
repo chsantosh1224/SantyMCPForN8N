@@ -1,0 +1,343 @@
+#  MCP AI Agent with Local LLM, FastMCP & n8n
+
+An AI Agent built from scratch using **Python**, **FastMCP**, **Ollama (Qwen/DeepSeek)** and **n8n**.
+
+The agent dynamically discovers available tools from an MCP server, uses a local LLM to decide which tool(s) to invoke, executes them through the Model Context Protocol (MCP), and finally performs a second LLM call to generate a natural language response.
+
+---
+
+##  Features
+
+- ✅ Local LLM using Ollama (Qwen / DeepSeek)
+- ✅ Dynamic MCP Tool Discovery
+- ✅ AI-driven Tool Selection
+- ✅ Multiple Tool Execution
+- ✅ FastMCP Server
+- ✅ n8n Workflow Integration
+- ✅ Two-step LLM Reasoning
+- ✅ Modular Python Architecture
+- ✅ Asynchronous Communication
+
+---
+
+# Architecture
+
+```text
+                    User
+                      │
+                      ▼
+          +----------------------+
+          |  Local LLM (Qwen)    |
+          |  Tool Planner        |
+          +----------------------+
+                      │
+                      ▼
+             Tool Selection JSON
+                      │
+                      ▼
+          +----------------------+
+          |     MCP Client       |
+          +----------------------+
+                      │
+                      ▼
+          +----------------------+
+          |     MCP Server       |
+          |      FastMCP         |
+          +----------------------+
+              │             │
+              ▼             ▼
+      summarizeEmail     askQuestion
+              │             │
+              ▼             ▼
+             n8n          n8n
+              │             │
+              └──────┬──────┘
+                     ▼
+            Tool Results
+                     │
+                     ▼
+       +--------------------------+
+       | Local LLM (Response)     |
+       +--------------------------+
+                     │
+                     ▼
+           Final AI Response
+```
+
+---
+
+# Project Flow
+
+### Step 1
+
+The MCP Client connects to the FastMCP Server.
+
+```
+Client
+      │
+      ▼
+MCP Server
+```
+
+---
+
+### Step 2
+
+The client dynamically fetches all available tools.
+
+Example:
+
+```
+summarizeEmail
+askQuestion
+```
+
+---
+
+### Step 3
+
+A prompt containing all available tools is sent to the Local LLM.
+
+Example:
+
+```
+User Request
+
+↓
+
+LLM
+
+↓
+
+{
+    "tools":[
+        ...
+    ]
+}
+```
+
+The LLM decides:
+
+- Which tool(s) to call
+- Which arguments to pass
+
+---
+
+### Step 4
+
+The MCP Client invokes each selected tool.
+
+Example:
+
+```
+summarizeEmail()
+
+↓
+
+askQuestion()
+```
+
+---
+
+### Step 5
+
+Each MCP Tool triggers an n8n workflow.
+
+Example:
+
+```
+summarizeEmail
+
+↓
+
+n8n Workflow
+
+↓
+
+OpenAI / Gemini
+
+↓
+
+Summary
+```
+
+---
+
+### Step 6
+
+Tool outputs are collected.
+
+Example:
+
+```json
+[
+    {
+        "tool":"summarizeEmail",
+        "result":"..."
+    },
+    {
+        "tool":"askQuestion",
+        "result":"Rahul"
+    }
+]
+```
+
+---
+
+### Step 7
+
+A second LLM call combines all tool outputs into one final answer.
+
+Instead of returning:
+
+```
+Tool A Result
+
+Tool B Result
+```
+
+the agent returns
+
+```
+Rahul is the point of contact.
+
+Santosh will be on leave tomorrow due to a personal emergency...
+```
+
+---
+
+# Technologies Used
+
+| Technology | Purpose |
+|------------|---------|
+| Python | Core Application |
+| FastMCP | MCP Server |
+| MCP SDK | MCP Client |
+| Ollama | Local LLM Runtime |
+| Qwen / DeepSeek | Local Language Model |
+| n8n | Workflow Automation |
+| AsyncIO | Asynchronous Execution |
+| HTTP | Communication between MCP and n8n |
+
+---
+
+# Folder Structure
+
+```
+MCPClient
+│
+├── agent.py
+├── llm.py
+├── mcp_client.py
+├── prompts.py
+├── main.py
+│
+├── MCPServer
+│   ├── N8NMCPServer.py
+│   └── tools
+│        └── N8NTools.py
+│
+├── requirements.txt
+└── README.md
+```
+
+---
+
+# Example
+
+## User
+
+```
+Answer the following question and summarize the email.
+
+Who is the point of contact?
+```
+
+---
+
+## LLM decides
+
+```json
+{
+    "tools":[
+        {
+            "tool":"askQuestion"
+        },
+        {
+            "tool":"summarizeEmail"
+        }
+    ]
+}
+```
+
+---
+
+## Tool Outputs
+
+```
+askQuestion
+
+↓
+
+Rahul
+```
+
+```
+summarizeEmail
+
+↓
+
+Santosh will be on leave...
+```
+
+---
+
+## Final Response
+
+```
+Rahul is the point of contact.
+
+Santosh will be on leave tomorrow due to a personal emergency.
+He has assigned Rahul as the point of contact during his absence.
+He also announced the birth of his baby girl and requested two weeks of paternity leave.
+```
+
+---
+
+# Future Improvements
+
+- Parallel Tool Execution using `asyncio.gather()`
+- Conversation Memory
+- Retrieval Augmented Generation (RAG)
+- Vector Database Integration
+- Tool Retry & Error Recovery
+- Streaming Responses
+- Multi-Agent Collaboration
+- Web Search Tool
+- SQL Tool
+- Code Interpreter Tool
+
+---
+
+# Learning Outcomes
+
+This project demonstrates practical implementation of:
+
+- Model Context Protocol (MCP)
+- AI Tool Calling
+- FastMCP Server Development
+- Local LLM Integration
+- Prompt Engineering
+- Agent Planning
+- Multi-step LLM Reasoning
+- n8n Workflow Automation
+- Async Python Programming
+
+---
+
+# Author
+
+**Santosh Challa**
+
+Senior Software Development Engineer in Test | AI & Agentic AI Enthusiast
+
